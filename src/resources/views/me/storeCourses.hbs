@@ -1,8 +1,25 @@
+<form method="POST" name="submit-select-delete" action="/courses/handle-form-delete">
+
 <div>
   <h1>Danh Sách Khóa Học</h1>
   <table class='table mt-4'>
     <thead>
+      <div class="d-flex align-items-center">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" value="" id="checkboxAll">
+          <label class="form-check-label" for="checkboxAll">
+            Chọn Tất Cả
+          </label>
+        </div>
+        <select style="width: 200px ;margin: 0 10px" class="form-select form-select-sm" aria-label="Default select example" name="action" id="select-delete">
+          <option value="" selected>--Chọn Chức Năng--</option>
+          <option value="DELETE">Xóa</option>
+        </select>
+        <button type="submit" class="btn btn-primary btn-perform disabled">Thực Hiện</button>
+      </div>
+      
       <tr>
+        <th scope='col'>#</th>
         <th scope='col'>STT</th>
         <th scope='col'>Tên Khóa học</th>
         <th scope='col'>Ảnh</th>
@@ -13,6 +30,11 @@
     <tbody>
       {{#each courses}}
         <tr>
+          <td>
+            <div class="form-check">
+            <input class="form-check-input" type="checkbox" value={{this._id}} name="coursesID[]" id="checkBoxCourses">
+            </div>
+          </td>
           <th scope='row'>{{sum @index 1}}</th>
           <td>{{this.name}}</td>
           <td>{{this.image}}</td>
@@ -42,7 +64,7 @@
     </tbody>
   </table>
 </div>
-
+</form>
 
 
 <!-- Modal -->
@@ -68,23 +90,86 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function(){
-  const modalElement = document.getElementById('modal-course')
-  const formElement = document.forms['form-delete']
-  const btnDelete = document.getElementById('btn-delete')
+    const modalElement = document.getElementById('modal-course')
+    const formElement = document.forms['form-delete']
+    const btnDelete = document.getElementById('btn-delete')
+    {{!-- const checkboxAll = document.querySelector('#checkboxAll') --}}
+    {{!-- const checkBoxCourses = document.querySelectorAll("#checkBoxCourses") --}}
+    
+    const checkboxAll = $('#checkboxAll')
+    const checkBoxCourses = $('input[name="coursesID[]"]')
+    const btnPerForm = document.querySelector(".btn-perform")
+    const formSelectDelete = document.forms['submit-select-delete']
+    const selectDelte = document.querySelector("#select-delete")
+    console.log(selectDelte)
+    console.log(!!selectDelte.options[0])
+    checkboxAll.change(function(){
+      const isCheckBoxAll = this.checked
+      checkBoxCourses.prop("checked",isCheckBoxAll)
+      renderBtnPerForm()
+    })
+   checkBoxCourses.change(function(e){
+    const isCheckBoxAll = checkBoxCourses.length === $('input[name="coursesID[]"]:checked').length
+    checkboxAll.prop("checked",isCheckBoxAll)
+    renderBtnPerForm()
+   })
 
-  
-  if (modalElement) {
-  modalElement.addEventListener('show.bs.modal', event => {
-    console.log("event" , event)
-    console.log("btnDelete" , btnDelete)
-    const button = event.relatedTarget
-    const courseID = button.getAttribute('data-id')
-    btnDelete.onclick = function(){
-      formElement.action = `/courses/${courseID}?_method=DELETE`
-      formElement.submit()
-      console.log(formElement)
-    } 
-  })
-}
+  btnPerForm.onclick = function(e){
+    e.preventDefault()
+    const isSubmit = !this.classList.contains("disabled")
+    console.log(!!selectDelte.options[1])
+    if(isSubmit && !!selectDelte.options[1]){
+      formSelectDelete.submit();
+    }
+  }
+
+    //render btn
+    function renderBtnPerForm(){
+      if($('input[name="coursesID[]"]:checked').length > 0){
+        btnPerForm.classList.remove("disabled")
+      }else{
+        btnPerForm.classList.add("disabled")
+      }
+    }
+
+   //code thuần javacript
+    {{!-- checkboxAll.onchange = function(e){
+      const isCheckBoxAll = this.checked
+      checkBoxCourses.forEach((checkCourse)=>{
+        checkCourse.checked = isCheckBoxAll
+      }) 
+    } --}}
+    {{!-- checkBoxCourses.forEach((checkCourse)=>{
+      checkCourse.onchange = function(e){
+        console.log("fsafqwefqwfqwef")
+        const checkedCourses =  Array.from(checkBoxCourses).filter((cbCourse)=>cbCourse.checked)
+        if(checkedCourses.length === checkBoxCourses.length ){
+            checkboxAll.checked = true
+        }else{
+          checkboxAll.checked = false
+        }
+
+        if(checkedCourses.checked){
+          btnPerForm.classList.remove("disabled")
+        }else{
+          btnPerForm.classList.add("disabled")
+        }
+      }
+    }) --}}
+
+    
+    if (modalElement) {
+      modalElement.addEventListener('show.bs.modal', event => {
+        console.log("event" , event)
+        console.log("btnDelete" , btnDelete)
+        const button = event.relatedTarget
+        const courseID = button.getAttribute('data-id')
+        btnDelete.onclick = function(){
+          formElement.action = `/courses/${courseID}?_method=DELETE`
+          formElement.submit()
+          console.log(formElement)
+        } 
+      })
+    }
   })
 </script>

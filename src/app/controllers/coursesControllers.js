@@ -55,6 +55,25 @@ class CoursesControllers {
       .then(() => res.redirect('back'))
       .catch(next);
   }
+  //[POST] /courses/handle-form-delete
+  handleFormSelcetDelete(req,res,next){
+    Courses.delete({_id:req.body.coursesID })
+      .then(()=> res.redirect('/me/trash/courses'))
+      .catch(next)
+  }
+
+  // [POST] /courses/form/delete
+  handleFormDeleteTrash(req,res,next){
+      Courses.deleteMany({ _id: req.body.coursesID  })
+      .then(() => res.redirect('back'))
+      .catch(next);  
+  }
+   // [POST] /courses/form/restored
+   handleFormStoredTrash(req,res,next){
+    Courses.restore({ _id: req.body.coursesID }, req.body)
+    .then(() => res.redirect('/me/stored/courses'))
+    .catch(next);
+   }
 }
 
 module.exports = new CoursesControllers();

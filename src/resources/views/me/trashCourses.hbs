@@ -1,18 +1,38 @@
+<form method="POST" name="hadnle-form-trash">
+
 <div>
-  <h1>Danh Sách Khóa Học Bị Xóa</h1>
-  <table class='table mt-4'>
+  <h1 class="text-center">Danh Sách Khóa Học Bị Xóa</h1>
+  <table class='table mt-5'>
     <thead>
+      <div class="d-flex align-items-center mt-4">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" value="" id="checkboxAll">
+          <label class="form-check-label" for="checkboxAll">
+            Chọn Tất Cả
+          </label>
+        </div>
+        <select style="width: 200px ;margin: 0 10px" class="form-select form-select-sm" aria-label="Default select example" name="action" id="select-action" required>
+          <option value="" selected>--Chọn Chức Năng--</option>
+          <option value="DELETE">Xóa</option>
+          <option value="RESTORED">Phục hồi</option>
+        </select>
+        <button id="btn-perform" type="submit" class="btn btn-primary btn-perform disabled">Thực Hiện</button>
+      </div>
       <tr>
-        <th scope='col'>STT</th>
+        <th scope='col' colspan="2">STT</th>
         <th scope='col'>Tên Khóa học</th>
         <th scope='col'>Ảnh</th>
         <th scope='col'>Trình Độ</th>
-        <th scope='col'>Thời Gian</th>
+        <th scope='col' colspan="2">Thời Gian</th>
       </tr>
     </thead>
     <tbody>
       {{#each courses}}
         <tr>
+          <td>
+          <div class="form-check">
+          <input class="form-check-input" type="checkbox" value={{this._id}} id="checkboxCourse" name="coursesID[]">
+        </div></td>
           <th scope='row'>{{sum @index 1}}</th>
           <td>{{this.name}}</td>
           <td>{{this.image}}</td>
@@ -44,7 +64,7 @@
     </tbody>
   </table>
 </div>
-
+</form>
 
 
 <!-- Modal -->
@@ -76,8 +96,52 @@
     const formRestored = document.forms['form-restored']
     const btnDelete = document.getElementById('btn-delete')
     const btnRestored = document.querySelectorAll('#btn-restored')
+    const checkboxAll = document.querySelector("#checkboxAll")
+    const checkboxItemCourses = document.querySelectorAll("#checkboxCourse")
+    const btnPerForm = document.querySelector("#btn-perform")
+    const formSelect = document.forms["hadnle-form-trash"]
+    const selectAction = document.querySelector("#select-action")
+  
+
+    checkboxAll.onchange = function(){
+      const isCheckBoxAll = this.checked
+      checkboxItemCourses.forEach(cbCoure=> cbCoure.checked = isCheckBoxAll)
+      renderButtonPerForm()
+    }
+
+    checkboxItemCourses.forEach((cbCoure)=>{
+      cbCoure.onchange = function(){
+        const isCheckBoxAll = checkboxItemCourses.length === document.querySelectorAll('input[name="coursesID[]"]:checked').length
+        checkboxAll.checked = isCheckBoxAll
+        renderButtonPerForm()
+      }
+     
+    })
+
+    selectAction.onchange = function(){
+      const selectValue = this.value
+      console.log(selectValue)
+      btnPerForm.onclick = function(){
+        if(document.querySelectorAll('input[name="coursesID[]"]:checked').length > 0){}
+          if(selectValue==='DELETE'){
+            formSelect.action = `/courses/form/delete`
+            formSelect.submit()
+          }else if(selectValue==='RESTORED'){
+            formSelect.action = `/courses/form/restored`
+            formSelect.submit()
+          }
+      }
+    }
     
+   
     
+    function renderButtonPerForm(){
+      if(document.querySelectorAll('input[name="coursesID[]"]:checked').length > 0){
+        btnPerForm.classList.remove("disabled")
+      }else{
+        btnPerForm.classList.add("disabled")
+      }
+    }
     if (modalElement) {
       modalElement.addEventListener('show.bs.modal', event => {
         console.log("event" , event)
@@ -92,7 +156,7 @@
         } 
       })
     }
-   btnRestored.forEach(button => {
+    btnRestored.forEach(button => {
     button.addEventListener('click', function(e) {
       e.preventDefault();
       const courseID =  button.getAttribute('data-id')
